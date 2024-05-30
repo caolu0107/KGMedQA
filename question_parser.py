@@ -1,6 +1,17 @@
 '''question_parser.py: 问题解析模块'''
 
 class QuestionPaser:
+    def __init__(self):
+        self.context = {}
+
+    def set_context(self, context):
+        self.context = context
+
+    def get_context(self):
+        return self.context
+
+    def clear_context(self):
+        self.context = {}
 
     '''构建实体节点'''
     def build_entitydict(self, args):
@@ -17,6 +28,11 @@ class QuestionPaser:
     '''解析主函数'''
     def parser_main(self, res_classify):
         args = res_classify['args']
+
+        if not args and 'previous_args' in self.context:
+            # 若当前问题不包含实体，则联系上下文
+            args.update(self.context['previous_args'])
+
         entity_dict = self.build_entitydict(args)
         question_types = res_classify['question_types']
         sqls = []
@@ -82,6 +98,13 @@ class QuestionPaser:
                 sql_['sql'] = sql
 
                 sqls.append(sql_)
+
+        if args:
+            # 若当前问题包含实体，则清除上下文
+            self.clear_context()
+        else:
+            # 若当前问题不包含实体，则保存上下文
+            self.context['previous_args'] = args
 
         return sqls
 

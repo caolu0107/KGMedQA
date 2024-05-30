@@ -49,16 +49,32 @@ class QuestionClassifier:
         self.cure_qwds = ['治疗什么', '治啥', '治疗啥', '医治啥', '治愈啥', '主治啥', '主治什么', '有什么用', '有何用', '用处', '用途',
                           '有什么好处', '有什么益处', '有何益处', '用来', '用来做啥', '用来作甚', '需要', '要']
 
+        self.context = {}
         print('model init finished ......')
 
         return
+
+    def set_context(self, context):
+        self.context = context
+
+    def get_context(self):
+        return self.context
+
+    def clear_context(self):
+        self.context = {}
 
     '''分类主函数'''
     def classify(self, question):
         data = {}
         medical_dict = self.check_medical(question)
-        if not medical_dict:
-            return {}
+
+        if not medical_dict and 'previous_question' in self.context:
+            # 若当前问题不包含实体，则联系上下文中的主题
+            # question = self.context['previous_topic'] + ' ' + question
+            question = self.context['previous_question'] + ' ' + question
+            medical_dict = self.check_medical(question)
+
+
         data['args'] = medical_dict
         #收集问句当中所涉及到的实体类型
         types = []
@@ -159,6 +175,15 @@ class QuestionClassifier:
 
         # 将多个分类结果进行合并处理，组装成一个字典
         data['question_types'] = question_types
+
+        # if medical_dict:
+        #     # 若当前问题包含实体，则清除上下文
+        #     self.context['previous_topic'] = list(medical_dict.keys())[0]
+        #     self.clear_context()
+        # else:
+        #     # 若当前问题不包含实体，则保存上下文
+        #     self.context['previous_question'] = question
+        self.context['previous_question'] = question
 
         return data
 
