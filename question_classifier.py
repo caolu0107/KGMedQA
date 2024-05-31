@@ -71,7 +71,7 @@ class QuestionClassifier:
         if not medical_dict and 'previous_question' in self.context:
             # 若当前问题不包含实体，则联系上下文中的主题
             # question = self.context['previous_topic'] + ' ' + question
-            question = self.context['previous_question'] + ' ' + question
+            question = str(self.context['previous_question']) + ' ' + question
             medical_dict = self.check_medical(question)
 
 
@@ -176,15 +176,8 @@ class QuestionClassifier:
         # 将多个分类结果进行合并处理，组装成一个字典
         data['question_types'] = question_types
 
-        # if medical_dict:
-        #     # 若当前问题包含实体，则清除上下文
-        #     self.context['previous_topic'] = list(medical_dict.keys())[0]
-        #     self.clear_context()
-        # else:
-        #     # 若当前问题不包含实体，则保存上下文
-        #     self.context['previous_question'] = question
-        self.context['previous_question'] = question
-
+        self.context['previous_question'] = list(medical_dict.keys())[0]
+        print('context:', self.context['previous_question'])
         return data
 
     '''构造词对应的类型'''
