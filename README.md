@@ -26,6 +26,9 @@
     git clone https://github.com/caolu0107/KGMedQA
     cd KGMedQA
     ```
+    下载并保存SimBERT模型到本地
+        访问 Hugging Face 上的 SimBERT 模型页面(https://huggingface.co/peterchou/simbert-chinese-base)。
+        下载模型文件并将其保存到本地目录，例如 ./simbert-chinese-base。
 
 2. **创建虚拟环境并安装依赖项**
 
