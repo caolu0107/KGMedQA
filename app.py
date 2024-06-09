@@ -90,21 +90,6 @@ def create_topic():
 
     return jsonify({'topic': {'id': topic_id, 'name': name}})
 
-@app.route('/api/rename_topic', methods=['POST'])
-def rename_topic():
-    data = request.json
-    topic_id = data.get('topicId')
-    name = data.get('name')
-    username = data.get('username')
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE topics SET name = ? WHERE id = ? AND username = ?", (name, topic_id, username))
-    conn.commit()
-    conn.close()
-
-    return jsonify({'success': True})
-
 @app.route('/api/get_topics', methods=['GET'])
 def get_topics():
     username = request.args.get('username')
@@ -116,6 +101,20 @@ def get_topics():
     conn.close()
 
     return jsonify({'topics': topics})
+
+@app.route('/api/delete_topic', methods=['POST'])
+def delete_topic():
+    data = request.json
+    topic_id = data.get('topicId')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM messages WHERE topic_id = ?", (topic_id,))
+    cursor.execute("DELETE FROM topics WHERE id = ?", (topic_id,))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'success': True})
 
 @app.route('/api/get_messages', methods=['GET'])
 def get_messages():
@@ -184,13 +183,13 @@ def send_message():
     parser.set_context(context.get('parser_context', {}))
 
     res_classify = classifier.classify(user_message)
-    print(f"res_classify: {res_classify}")
+    # print(f"res_classify: {res_classify}")
     if not res_classify:
         save_message(topic_id, user_message, True)
         save_message(topic_id, answer, False)
         return jsonify({'response': answer})
     res_sql = parser.parser_main(res_classify)
-    print(f"res_sql: {res_sql}")
+    # print(f"res_sql: {res_sql}")
     final_answers = searcher.search_main(res_sql)
     if not final_answers:
         save_message(topic_id, user_message, True)
@@ -202,6 +201,7 @@ def send_message():
         save_message(topic_id, response, False)
         # 保存上下文
         save_context(topic_id, classifier.get_context(), parser.get_context())
+        print(f"Response: {response}")
         return jsonify({'response': response})
 
 def save_message(topic_id, text, user):
@@ -213,4 +213,5 @@ def save_message(topic_id, text, user):
     conn.close()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run()
